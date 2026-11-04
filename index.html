@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fb">
+  <title>股票 EPS 查詢｜台股五年</title>
+  <style>
+    :root { color-scheme: light; --ink:#17243b; --muted:#66748a; --line:#e4eaf2; --blue:#2459d3; --blue-dark:#173c92; --paper:#fff; --bg:#f5f7fb; --green:#0d806b; }
+    * { box-sizing:border-box }
+    body { margin:0; background:radial-gradient(ellipse at 90% -10%,#dfeaff 0,transparent 34rem),var(--bg); color:var(--ink); font:16px/1.55 "Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif; }
+    main { width:min(920px,calc(100% - 36px)); margin:58px auto; }
+    .eyebrow { color:var(--blue); font-size:12px; font-weight:800; letter-spacing:.14em; text-transform:uppercase }
+    h1 { margin:8px 0 8px; font-size:clamp(30px,5vw,44px); line-height:1.15; letter-spacing:-.04em }
+    .intro { margin:0; max-width:600px; color:var(--muted) }
+    .panel { margin-top:30px; border:1px solid var(--line); border-radius:20px; background:var(--paper); box-shadow:0 16px 50px #19345d0d; overflow:hidden }
+    .search { padding:24px; border-bottom:1px solid var(--line); background:linear-gradient(120deg,#fff,#f8faff) }
+    label { display:block; margin-bottom:9px; font-size:13px; font-weight:750 }
+    .input-row { display:flex; gap:10px; max-width:590px }
+    input, select { min-width:0; height:48px; padding:0 14px; border:1px solid #cbd5e1; border-radius:10px; background:#fff; color:var(--ink); font:inherit; outline:none; transition:border .15s,box-shadow .15s }
+    input { flex:1 }
+    #price-year { width:116px; flex:0 0 116px }
+    input:focus, select:focus { border-color:var(--blue); box-shadow:0 0 0 3px #2459d31c }
+    button { min-width:112px; height:48px; border:0; border-radius:10px; background:var(--blue); color:#fff; font:inherit; font-weight:750; cursor:pointer; transition:background .15s,transform .15s }
+    button:hover { background:var(--blue-dark) } button:active { transform:translateY(1px) }
+    .hint { margin:9px 0 0; color:var(--muted); font-size:12px }
+    .result { padding:25px 24px 22px }
+    .result-top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:20px }
+    h2 { margin:0; font-size:21px }
+    .stock-name { margin-left:10px; color:inherit; font-size:inherit; font-weight:inherit }
+    .industry-note { margin-top:3px; color:#8792a4; font-size:12px }
+    .price-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:18px 0 22px }
+    .current-market-card { grid-column:1 / -1 }
+    .price-card { padding:15px 17px; border:1px solid var(--line); border-radius:12px; background:#fbfcff }
+    .price-label { color:var(--muted); font-size:12px; font-weight:750 }
+    .price-value { margin-top:5px; color:var(--ink); font-size:24px; font-weight:800; font-variant-numeric:tabular-nums }
+    .price-date,.price-status { min-height:18px; margin-top:2px; color:#8792a4; font-size:12px }
+    .price-status { margin:0 0 12px }
+    .position-wrap { width:100%; overflow:hidden; margin:18px 0 24px; border:1px solid #1b1b1b; border-radius:4px }
+    .position-grid { width:100%; min-width:0; table-layout:fixed; border-collapse:collapse; text-align:center }
+    .position-grid caption { padding:9px 4px; color:var(--ink); font-size:clamp(13px,2vw,18px); font-weight:800; caption-side:top }
+    .position-grid td { width:10%; padding:clamp(4px,1vw,7px) 1px; border:1px solid #333; font-size:clamp(8px,1.55vw,16px); font-variant-numeric:tabular-nums; white-space:nowrap }
+    .position-grid .position-percent { background:#d3d3d3; font-weight:700 }
+    .position-grid .position-anchor { background:#b20be7; color:#fff; font-weight:800 }
+    .position-grid .position-spacer { height:32px; padding:0 }
+    .position-grid .position-support { padding:8px; font-size:clamp(13px,2vw,17px); font-weight:700 }
+    .estimate-panel { display:grid; grid-template-columns:1.15fr .9fr 1fr; gap:14px; margin:0 0 24px; padding:16px; border:1px solid var(--line); border-radius:12px; background:#fbfcff }
+    .estimate-group { display:grid; align-content:start; gap:10px; min-width:0 }
+    .estimate-group label,.estimate-label { display:block; margin:0 0 6px; color:var(--ink); font-size:14px; font-weight:750 }
+    .estimate-group input { width:100%; height:44px; text-align:right; font-variant-numeric:tabular-nums }
+    .estimate-value { display:flex; align-items:center; justify-content:flex-end; min-height:44px; padding:8px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--ink); font-size:18px; font-weight:750; font-variant-numeric:tabular-nums }
+    .estimate-value.empty { color:#8792a4; font-size:14px; font-weight:500 }
+    .estimate-consensus { grid-column:1 / -1; margin-top:0; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--muted); font-size:12px; line-height:1.55 }
+    .estimate-consensus strong { display:block; margin-bottom:3px; color:var(--ink); font-size:13px }
+    .estimate-consensus a { display:inline-block; margin-top:4px; font-weight:700 }
+    .consensus-range { margin:4px 0 10px; color:var(--blue-dark); font-size:14px; font-weight:800 }
+    .consensus-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px }
+    .consensus-stat { padding:8px 10px; border-radius:8px; background:#f5f7fb }
+    .consensus-stat span { display:block; color:var(--muted); font-size:11px }
+    .consensus-stat b { display:block; margin-top:2px; color:var(--ink); font-size:14px; font-variant-numeric:tabular-nums }
+    .estimate-formula { grid-column:1 / -1; margin:-4px 4px 0; color:var(--muted); font-size:12px }
+    .year-pill { display:inline-flex; align-items:center; gap:7px; padding:6px 10px; border-radius:999px; background:#eef3ff; color:var(--blue-dark); font-size:12px; font-weight:750; white-space:nowrap }
+    .dot { width:7px; height:7px; border-radius:50%; background:#4a78e7 }
+    .table-wrap { overflow-x:auto; border:1px solid var(--line); border-radius:12px }
+    table { width:100%; border-collapse:collapse; min-width:650px; text-align:left }
+    th,td { padding:14px 16px; border-bottom:1px solid var(--line) }
+    th { color:var(--muted); background:#f8faff; font-size:12px; font-weight:750 }
+    td { font-variant-numeric:tabular-nums; font-size:16px }
+    tbody tr:last-child td { border-bottom:0 }
+    .eps { color:var(--green); font-weight:800 }
+    .sources { display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; margin-top:17px; color:var(--muted); font-size:12px }
+    a { color:var(--blue); text-decoration:none } a:hover { text-decoration:underline }
+    .status { min-height:21px; margin-top:8px; color:#b42318; font-size:13px }
+    footer { margin:18px 4px 0; color:var(--muted); font-size:12px }
+    @media(max-width:560px) { main { margin:32px auto } .search,.result { padding:20px 16px } .input-row { gap:8px; flex-wrap:wrap } input { flex:1 1 180px } #price-year { flex:1 1 100px; width:auto } button { min-width:88px; flex:1 } .result-top { align-items:center } .price-summary { grid-template-columns:repeat(2,minmax(0,1fr)) } .current-market-card { grid-column:1 / -1 } .consensus-stats { grid-template-columns:repeat(2,minmax(0,1fr)) } }
+    @media(max-width:700px) { .estimate-panel { grid-template-columns:1fr 1fr } }
+    @media(max-width:420px) { .estimate-panel { grid-template-columns:1fr } }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">Earnings lookup</div>
+    <h1>股票 EPS 查詢</h1>
+    <p class="intro">輸入上市或上櫃股票代碼，一次查看最近五個年度的各季每股盈餘。EPS 單位為新台幣元。</p>
+
+    <section class="panel" aria-label="股票 EPS 查詢結果">
+      <form class="search" id="lookup-form">
+        <label for="ticker">台股股票代碼</label>
+        <div class="input-row">
+          <input id="ticker" name="ticker" inputmode="numeric" autocomplete="off" placeholder="例如：2330、2317、2454" aria-describedby="ticker-hint status">
+          <select id="price-year" name="price-year" aria-label="選擇股價年度"></select>
+          <button type="submit">查詢 EPS</button>
+        </div>
+        <p class="hint" id="ticker-hint">支援有公開季報資料的上市、上櫃公司代碼。公司簡介依產業分類提供。</p>
+        <div class="status" id="status" role="status" aria-live="polite"></div>
+      </form>
+
+      <div class="result" id="result" aria-live="polite">
+        <div class="result-top">
+          <div><h2>股票 <span id="company-code">2330</span> <span class="stock-name" id="company-name">台積電</span></h2><div class="industry-note" id="company-industry">產業分類：半導體業</div><div class="industry-note" id="company-business">主要業務簡介：依客戶之訂單與其提供之產品設計說明，以從事製造與銷售積體電路以及其他晶圓半導體裝置。</div></div>
+          <div class="year-pill"><span class="dot"></span><span id="year-label">最近五個年度</span></div>
+        </div>
+        <div class="price-summary" aria-label="年度股價與本益比統計">
+          <div class="price-card current-market-card"><div class="price-label">目前市價</div><div class="price-value" id="current-market-price">—</div><div class="price-date" id="current-market-date">等待行情資料</div></div>
+          <div class="price-card"><div class="price-label" id="annual-high-label">年度最高股價</div><div class="price-value" id="annual-high">—</div><div class="price-date" id="annual-high-date"></div></div>
+          <div class="price-card"><div class="price-label" id="annual-low-label">年度最低股價</div><div class="price-value" id="annual-low">—</div><div class="price-date" id="annual-low-date"></div></div>
+          <div class="price-card"><div class="price-label" id="annual-per-label">年度平均本益比</div><div class="price-value" id="annual-per">—</div><div class="price-date" id="annual-per-note">每日收盤價 ÷ 當年度累計 EPS</div></div>
+          <div class="price-card"><div class="price-label" id="annual-per-high-label">年度本益比最高</div><div class="price-value" id="annual-per-high">—</div><div class="price-date" id="annual-per-high-date"></div></div>
+          <div class="price-card"><div class="price-label" id="annual-per-low-label">年度本益比最低</div><div class="price-value" id="annual-per-low">—</div><div class="price-date" id="annual-per-low-date"></div></div>
+        </div>
+        <div class="price-status" id="price-status" role="status" aria-live="polite">年度股價資料載入中…</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">年度</th><th scope="col">Q1 EPS</th><th scope="col">Q2 EPS</th><th scope="col">Q3 EPS</th><th scope="col">Q4 EPS</th><th scope="col">年度累計 EPS</th></tr></thead>
+            <tbody id="eps-rows"><tr><td>2022</td><td>—</td><td>—</td><td>—</td><td>—</td><td></td></tr><tr><td>2023</td><td>—</td><td>—</td><td>—</td><td>—</td><td></td></tr><tr><td>2024</td><td>—</td><td>—</td><td>—</td><td>—</td><td></td></tr><tr><td>2025</td><td>13.94</td><td>15.36</td><td>17.44</td><td>19.50</td><td>66.24</td></tr><tr><td>2026</td><td>22.08</td><td>27.25</td><td>29.43</td><td>尚未公布</td><td></td></tr></tbody>
+          </table>
+        </div>
+        <div class="sources"><span id="source-note">EPS：台積電官方公告（稀釋 EPS）</span><a id="source-link" href="https://pr.tsmc.com/chinese/news/3297" target="_blank" rel="noopener noreferrer">官方財報公告</a><a href="https://finmind.github.io/tutor/TaiwanMarket/Fundamental/" target="_blank" rel="noopener noreferrer">EPS 資料說明</a><a href="https://finmind.github.io/tutor/TaiwanMarket/Technical/" target="_blank" rel="noopener noreferrer">股價日成交資料說明</a><span id="updated-at"></span></div>
+        <div class="estimate-panel" aria-label="預估本益比與目標價">
+          <div class="estimate-group">
+            <label for="estimated-annual-eps">今年度預估累計 EPS</label>
+            <input id="estimated-annual-eps" name="estimated-annual-eps" type="number" step="0.01" inputmode="decimal" placeholder="請輸入預估 EPS" aria-label="今年度預估累計 EPS">
+          </div>
+          <div class="estimate-group">
+            <div><span class="estimate-label" id="previous-per-high-label">上一年度最高本益比</span><div class="estimate-value empty" id="previous-per-high">等待資料</div></div>
+            <div><span class="estimate-label" id="previous-per-low-label">上一年度最低本益比</span><div class="estimate-value empty" id="previous-per-low">等待資料</div></div>
+          </div>
+          <div class="estimate-group">
+            <div><span class="estimate-label">預估高目標價</span><div class="estimate-value empty" id="target-price-high">輸入 EPS 後計算</div></div>
+            <div><span class="estimate-label">預估低目標價</span><div class="estimate-value empty" id="target-price-low">輸入 EPS 後計算</div></div>
+          </div>
+          <div class="estimate-formula">目標價計算方式：今年度預估累計 EPS × 上一年度最高／最低本益比。</div>
+          <div class="estimate-consensus" id="consensus-estimate">
+            <strong id="consensus-title">年度累計 EPS 市場預估</strong>
+            <div class="consensus-range" id="consensus-range">載入分析師預估區間…</div>
+            <div class="consensus-stats" id="consensus-stats"></div>
+            <div>市場預估為分析師預測，會隨資料更新；不代表公司正式財報。</div>
+            <a id="consensus-link" href="https://www.cnyes.com/twstock/2330/research/finirating" target="_blank" rel="noopener noreferrer">查看鉅亨市場預估</a>
+          </div>
+        </div>
+        <div class="position-wrap">
+          <table class="position-grid" aria-label="今年度部位價格參考表">
+            <caption id="position-caption">今年度部位｜100% 基準：載入中</caption>
+            <tbody id="position-rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+    <footer>資料來自第三方公開財報資料服務，公告與更正可能造成數值差異；投資判斷請以公司公告及正式財報為準。</footer>
+  </main>
+  <script>
+    const form = document.querySelector("#lookup-form");
+    const input = document.querySelector("#ticker");
+    const status = document.querySelector("#status");
+    const button = form.querySelector("button");
+    const currentYear = new Date().getFullYear();
+    const firstYear = currentYear - 4;
+    const years = Array.from({ length: 5 }, (_, index) => firstYear + index);
+    const priceYearSelect = document.querySelector("#price-year");
+    for (const year of years) {
+      const option = document.createElement("option");
+      option.value = String(year);
+      option.textContent = `${year} 年`;
+      priceYearSelect.append(option);
+    }
+    priceYearSelect.value = String(currentYear);
+    document.querySelector("#year-label").textContent = `${firstYear}–${currentYear} 年`;
+    const api = "https://api.finmindtrade.com/api/v4/data";
+    const companyCacheKey = "eps-lookup-tw-stock-info-v1";
+    let priceRequestId = 0;
+    let positionRequestId = 0;
+    let annualEPSByYear = {};
+    let previousYearPer = { high: null, low: null };
+    let previousPerRequestId = 0;
+    const officialExamples = { "2330": { 2025: ["13.94", "15.36", "17.44", "19.50"], 2026: ["22.08", "27.25", "29.43", null] } };
+    const industryDescriptions = {
+      "半導體業": "設計、製造或封裝半導體晶片與相關產品。",
+      "電腦及週邊設備業": "生產電腦、伺服器、儲存設備或周邊零組件。",
+      "電子零組件業": "生產電路板、連接器、電源及其他電子零件。",
+      "光電業": "生產顯示器、光學元件、照明或其他光電產品。",
+      "通信網路業": "開發或製造通訊設備、網路產品及相關服務。",
+      "資訊服務業": "提供軟體、資訊系統、雲端或數位技術服務。",
+      "其他電子業": "製造電子設備、產品或提供相關技術服務。",
+      "電機機械業": "製造電機、機械、自動化設備或相關零件。",
+      "生技醫療業": "研發或生產生技、醫藥、醫療器材及健康相關產品。",
+      "金融保險業": "提供銀行、證券、保險或資產管理等金融服務。",
+      "銀行業": "提供存放款、支付、財富管理等金融服務。",
+      "保險業": "提供人壽或產物保險及相關金融服務。",
+      "鋼鐵工業": "生產鋼鐵材料與相關加工產品。",
+      "化學工業": "生產化學材料、原料或特用化學品。",
+      "航運業": "經營海運貨物或客運等運輸服務。",
+      "觀光事業": "經營旅宿、旅行、休閒或觀光服務。",
+      "貿易百貨業": "透過零售或貿易通路銷售商品及提供相關服務。",
+      "水泥工業": "生產水泥、預拌混凝土與相關建築材料。",
+      "建材營造業": "供應建築材料，或提供營造與工程服務。",
+      "食品工業": "加工、生產或銷售食品與飲料。",
+      "塑膠工業": "製造塑膠原料、塑膠製品或複合材料。",
+      "紡織纖維業": "生產纖維、布料、成衣或相關紡織產品。",
+      "油電燃氣業": "經營電力、天然氣或能源供應相關業務。",
+      "汽車工業": "製造汽車、車用零組件或提供相關服務。"
+    };
+    const companyBusinessOverrides = {
+      "2330": "依客戶之訂單與其提供之產品設計說明，以從事製造與銷售積體電路以及其他晶圓半導體裝置。"
+    };
+
+    function describeIndustry(industry) {
+      return industryDescriptions[industry] || (industry ? `提供${industry}相關產品或服務。` : "目前沒有產業簡介資料。");
+    }
+
+    async function fetchJson(url) {
+      const response = await fetch(url, { headers: { Accept: "application/json" } });
+      if (!response.ok) throw new Error(`資料服務回應 ${response.status}`);
+      const body = await response.json();
+      if (body.status !== 200 || !Array.isArray(body.data)) throw new Error(body.msg || "資料服務目前無法提供資料");
+      return body.data;
+    }
+
+    async function getCompanies() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(companyCacheKey) || "null");
+        if (saved && Date.now() - saved.savedAt < 24 * 60 * 60 * 1000) return saved.data;
+      } catch (_) { /* Ignore unavailable or invalid browser storage. */ }
+      const data = await fetchJson(`${api}?dataset=TaiwanStockInfo`);
+      try { localStorage.setItem(companyCacheKey, JSON.stringify({ savedAt: Date.now(), data })); } catch (_) { /* Cache is optional. */ }
+      return data;
+    }
+
+    async function getAnnualPriceData(code, year) {
+      const cacheKey = `eps-lookup-tw-prices-${code}-${year}`;
+      try {
+        const saved = JSON.parse(localStorage.getItem(cacheKey) || "null");
+        if (saved && Date.now() - saved.savedAt < 6 * 60 * 60 * 1000) return saved.data;
+      } catch (_) { /* Ignore unavailable or invalid browser storage. */ }
+      const params = new URLSearchParams({ dataset: "TaiwanStockPrice", data_id: code, start_date: `${year}-01-01`, end_date: `${year}-12-31` });
+      const data = await fetchJson(`${api}?${params.toString()}`);
+      try { localStorage.setItem(cacheKey, JSON.stringify({ savedAt: Date.now(), data })); } catch (_) { /* Cache is optional. */ }
+      return data;
+    }
+
+    async function getAnnualPerData(code, year) {
+      const cacheKey = `eps-lookup-tw-per-${code}-${year}`;
+      try {
+        const saved = JSON.parse(localStorage.getItem(cacheKey) || "null");
+        if (saved && Date.now() - saved.savedAt < 6 * 60 * 60 * 1000) return saved.data;
+      } catch (_) { /* Ignore unavailable or invalid browser storage. */ }
+      const params = new URLSearchParams({ dataset: "TaiwanStockPER", data_id: code, start_date: `${year}-01-01`, end_date: `${year}-12-31` });
+      const data = await fetchJson(`${api}?${params.toString()}`);
+      try { localStorage.setItem(cacheKey, JSON.stringify({ savedAt: Date.now(), data })); } catch (_) { /* Cache is optional. */ }
+      return data;
+    }
+
+    async function getLatestPriceData(code) {
+      const cacheKey = `eps-lookup-tw-latest-price-${code}`;
+      try {
+        const saved = JSON.parse(localStorage.getItem(cacheKey) || "null");
+        if (saved && Date.now() - saved.savedAt < 5 * 60 * 1000) return saved.data;
+      } catch (_) { /* Ignore unavailable or invalid browser storage. */ }
+      const end = new Date();
+      const start = new Date(end);
+      start.setDate(start.getDate() - 30);
+      const toIsoDate = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+      const params = new URLSearchParams({ dataset: "TaiwanStockPrice", data_id: code, start_date: toIsoDate(start), end_date: toIsoDate(end) });
+      const data = await fetchJson(`${api}?${params.toString()}`);
+      try { localStorage.setItem(cacheKey, JSON.stringify({ savedAt: Date.now(), data })); } catch (_) { /* Cache is optional. */ }
+      return data;
+    }
+
+    function updateCurrentMarketPrice(rows) {
+      const latest = rows
+        .map(row => ({ date: row.date, close: Number(String(row.close).replace(/,/g, "")) }))
+        .filter(row => Number.isFinite(row.close) && row.close > 0)
+        .sort((a, b) => b.date.localeCompare(a.date))[0];
+      document.querySelector("#current-market-price").textContent = latest ? `${latest.close.toFixed(2)} 元` : "—";
+      document.querySelector("#current-market-date").textContent = latest
+        ? `最新收盤資料：${latest.date}（非盤中即時報價）`
+        : "目前無可用行情資料";
+    }
+
+    function setEstimateValue(selector, value, empty = false) {
+      const element = document.querySelector(selector);
+      element.textContent = value;
+      element.classList.toggle("empty", empty);
+    }
+
+    function updateTargetPrices() {
+      const eps = Number(document.querySelector("#estimated-annual-eps").value);
+      const canCalculate = Number.isFinite(eps) && eps > 0 && previousYearPer.high > 0 && previousYearPer.low > 0;
+      setEstimateValue("#target-price-high", canCalculate ? `${(eps * previousYearPer.high).toFixed(2)} 元` : "輸入 EPS 後計算", !canCalculate);
+      setEstimateValue("#target-price-low", canCalculate ? `${(eps * previousYearPer.low).toFixed(2)} 元` : "輸入 EPS 後計算", !canCalculate);
+    }
+
+    function updateConsensusEstimate(code) {
+      const year = currentYear;
+      const link = document.querySelector("#consensus-link");
+      const range = document.querySelector("#consensus-range");
+      const stats = document.querySelector("#consensus-stats");
+      const estimates = {
+        "2330": { 2026: { high:112.2, low:92.7, average:105.77, median:107.74, analysts:42, target:3160, href:"https://www.chiefbao.com/new/tw/article-7309.html", source:"查看分析師預估來源" } },
+        "3008": { 2026: { high:190, low:155.54, average:167.46, median:163.72, analysts:18, target:8250, href:"https://www.google.com/search?q=3008+2026+EPS+分析師預估", source:"查看網路分析師預估" } }
+      };
+      const estimate = estimates[code]?.[year];
+      document.querySelector("#consensus-title").textContent = `${year} 年分析師預估年度累計 EPS`;
+      stats.replaceChildren();
+      if (estimate) {
+        range.textContent = `預估範圍（低 → 高）：${estimate.low.toFixed(2)} → ${estimate.high.toFixed(2)} 元`;
+        const items = [
+          ["最高估值", `${estimate.high.toFixed(2)} 元`],
+          ["最低估值", `${estimate.low.toFixed(2)} 元`],
+          ["平均值", `${estimate.average.toFixed(2)} 元`],
+          ["中位數", `${estimate.median.toFixed(2)} 元`],
+          ["分析師人數", `${estimate.analysts} 位`],
+          ["預估目標價", `${estimate.target.toLocaleString("zh-TW")} 元`]
+        ];
+        for (const [label, value] of items) {
+          const item = document.createElement("div");
+          item.className = "consensus-stat";
+          const name = document.createElement("span");
+          name.textContent = label;
+          const amount = document.createElement("b");
+          amount.textContent = value;
+          item.append(name, amount);
+          stats.append(item);
+        }
+        link.href = estimate.href;
+        link.textContent = estimate.source;
+      } else {
+        range.textContent = "目前沒有自動帶入的數值；可搜尋網路公開的分析師預估資料。";
+        link.href = `https://www.google.com/search?q=${encodeURIComponent(`${code} ${year} EPS 分析師預估 最高 最低 平均 中位數 目標價`)}`;
+        link.textContent = "搜尋網路分析師 EPS 預估";
+      }
+    }
+
+    async function updatePreviousYearPER(code) {
+      const requestId = ++previousPerRequestId;
+      const previousYear = currentYear - 1;
+      document.querySelector("#previous-per-high-label").textContent = `${previousYear} 年度最高本益比`;
+      document.querySelector("#previous-per-low-label").textContent = `${previousYear} 年度最低本益比`;
+      previousYearPer = { high: null, low: null };
+      setEstimateValue("#previous-per-high", "計算中…", true);
+      setEstimateValue("#previous-per-low", "計算中…", true);
+      updateTargetPrices();
+      const quarters = annualEPSByYear[previousYear] || [];
+      const completeEPS = quarters.length === 4 && quarters.every(value => value !== null && value !== undefined && Number.isFinite(Number(value)));
+      const annualEPS = completeEPS ? quarters.reduce((sum, value) => sum + Number(value), 0) : 0;
+      if (!completeEPS || annualEPS <= 0) {
+        setEstimateValue("#previous-per-high", "年度 EPS 不完整", true);
+        setEstimateValue("#previous-per-low", "年度 EPS 不完整", true);
+        return;
+      }
+      try {
+        const rows = await getAnnualPriceData(code, previousYear);
+        if (requestId !== previousPerRequestId) return;
+        const perRows = rows.map(row => ({
+          date: row.date,
+          value: Number(String(row.close).replace(/,/g, "")) / annualEPS
+        })).filter(row => Number.isFinite(row.value) && row.value > 0);
+        if (!perRows.length) throw new Error("沒有可用行情");
+        const highest = perRows.reduce((best, row) => row.value > best.value ? row : best);
+        const lowest = perRows.reduce((best, row) => row.value < best.value ? row : best);
+        previousYearPer = { high: highest.value, low: lowest.value };
+        setEstimateValue("#previous-per-high", `${highest.value.toFixed(2)} 倍`);
+        setEstimateValue("#previous-per-low", `${lowest.value.toFixed(2)} 倍`);
+        updateTargetPrices();
+      } catch (_) {
+        if (requestId !== previousPerRequestId) return;
+        setEstimateValue("#previous-per-high", "資料暫時無法載入", true);
+        setEstimateValue("#previous-per-low", "資料暫時無法載入", true);
+      }
+    }
+
+    function renderPositionTable(basePrice, year) {
+      const caption = document.querySelector("#position-caption");
+      caption.textContent = basePrice > 0
+        ? `${year} 年度部位｜100% 基準：${basePrice.toFixed(2)} 元（該年度最高股價）`
+        : `${year} 年度部位｜100% 基準：目前無股價資料`;
+      const body = document.querySelector("#position-rows");
+      body.replaceChildren();
+      for (let group = 0; group < 3; group++) {
+        const percentages = Array.from({ length: 10 }, (_, index) => 150 - group * 50 - index * 5);
+        const percentRow = document.createElement("tr");
+        const priceRow = document.createElement("tr");
+        for (const percentage of percentages) {
+          const percentCell = document.createElement("td");
+          percentCell.className = "position-percent";
+          percentCell.textContent = `${percentage}%`;
+          const priceCell = document.createElement("td");
+          priceCell.textContent = basePrice > 0
+            ? (percentage === 100 ? basePrice.toLocaleString("zh-TW", { maximumFractionDigits: 2 }) : Math.floor(basePrice * percentage / 100).toLocaleString("zh-TW"))
+            : "—";
+          if (percentage === 100) priceCell.className = "position-anchor";
+          percentRow.append(percentCell);
+          priceRow.append(priceCell);
+        }
+        body.append(percentRow, priceRow);
+      }
+      const spacerRow = document.createElement("tr");
+      const spacer = document.createElement("td");
+      spacer.colSpan = 10;
+      spacer.className = "position-spacer";
+      spacerRow.append(spacer);
+      const supportRow = document.createElement("tr");
+      const support = document.createElement("td");
+      support.colSpan = 10;
+      support.className = "position-support";
+      support.textContent = "支撐";
+      supportRow.append(support);
+      body.append(spacerRow, supportRow);
+    }
+
+    async function updatePositionTable(code, year, suppliedRows) {
+      const requestId = ++positionRequestId;
+      try {
+        const rows = suppliedRows === undefined ? await getAnnualPriceData(code, year) : suppliedRows;
+        if (requestId !== positionRequestId) return;
+        const highs = rows.map(row => Number(String(row.max).replace(/,/g, ""))).filter(value => Number.isFinite(value) && value > 0);
+        renderPositionTable(highs.length ? Math.max(...highs) : null, year);
+      } catch (_) {
+        if (requestId === positionRequestId) renderPositionTable(null, year);
+      }
+    }
+
+    async function updateAnnualPrices(code, year) {
+      const requestId = ++priceRequestId;
+      document.querySelector("#annual-high-label").textContent = `${year} 年度最高股價`;
+      document.querySelector("#annual-low-label").textContent = `${year} 年度最低股價`;
+      document.querySelector("#annual-high").textContent = "—";
+      document.querySelector("#annual-low").textContent = "—";
+      document.querySelector("#annual-per").textContent = "";
+      document.querySelector("#annual-per-high").textContent = "";
+      document.querySelector("#annual-per-low").textContent = "";
+      document.querySelector("#annual-high-date").textContent = "";
+      document.querySelector("#annual-low-date").textContent = "";
+      document.querySelector("#annual-per-high-date").textContent = "";
+      document.querySelector("#annual-per-low-date").textContent = "";
+      document.querySelector("#annual-per-note").textContent = "每日收盤價 ÷ 當年度累計 EPS";
+      document.querySelector("#price-status").textContent = `${year} 年股價查詢中…`;
+      try {
+        const [priceResult, latestResult] = await Promise.allSettled([
+          getAnnualPriceData(code, year),
+          year === currentYear ? Promise.resolve(null) : getLatestPriceData(code)
+        ]);
+        if (requestId !== priceRequestId) return;
+        const rows = priceResult.status === "fulfilled" ? priceResult.value : [];
+        const latestRows = year === currentYear
+          ? rows
+          : (latestResult.status === "fulfilled" ? latestResult.value : []);
+        updateCurrentMarketPrice(latestRows);
+        const parsed = rows.map(row => ({
+          date: row.date,
+          high: Number(String(row.max).replace(/,/g, "")),
+          low: Number(String(row.min).replace(/,/g, "")),
+          close: Number(String(row.close).replace(/,/g, ""))
+        })).filter(row => Number.isFinite(row.high) && Number.isFinite(row.low) && row.high > 0 && row.low > 0);
+        if (parsed.length) {
+          const highest = parsed.reduce((best, row) => row.high > best.high ? row : best);
+          const lowest = parsed.reduce((best, row) => row.low < best.low ? row : best);
+          document.querySelector("#annual-high").textContent = `${highest.high.toFixed(2)} 元`;
+          document.querySelector("#annual-low").textContent = `${lowest.low.toFixed(2)} 元`;
+          document.querySelector("#annual-high-date").textContent = `發生日期：${highest.date}`;
+          document.querySelector("#annual-low-date").textContent = `發生日期：${lowest.date}`;
+        }
+        const quarters = annualEPSByYear[year] || [];
+        const hasCompleteAnnualEPS = quarters.length === 4 && quarters.every(value => value !== null && value !== undefined && Number.isFinite(Number(value)));
+        const annualEPS = hasCompleteAnnualEPS ? quarters.reduce((sum, value) => sum + Number(value), 0) : 0;
+        const dailyPers = hasCompleteAnnualEPS && annualEPS > 0
+          ? parsed.filter(row => Number.isFinite(row.close) && row.close > 0).map(row => ({ date: row.date, value: row.close / annualEPS }))
+          : [];
+        if (dailyPers.length) {
+          const averagePer = dailyPers.reduce((sum, row) => sum + row.value, 0) / dailyPers.length;
+          const highestPer = dailyPers.reduce((best, row) => row.value > best.value ? row : best);
+          const lowestPer = dailyPers.reduce((best, row) => row.value < best.value ? row : best);
+          document.querySelector("#annual-per").textContent = `${averagePer.toFixed(2)} 倍`;
+          document.querySelector("#annual-per-high").textContent = `${highestPer.value.toFixed(2)} 倍`;
+          document.querySelector("#annual-per-low").textContent = `${lowestPer.value.toFixed(2)} 倍`;
+          document.querySelector("#annual-per-high-date").textContent = `發生日期：${highestPer.date}`;
+          document.querySelector("#annual-per-low-date").textContent = `發生日期：${lowestPer.date}`;
+        }
+        document.querySelector("#price-status").textContent = parsed.length
+          ? (dailyPers.length ? `最高／最低價依每日行情；本益比以每日收盤價 ÷ ${year} 年累計 EPS ${annualEPS.toFixed(2)} 元計算` : `最高／最低價依每日行情；${year} 年度 EPS 尚未完整公布，本益比留白`)
+          : `${year} 年尚無股價資料。`;
+      } catch (_) {
+        if (requestId === priceRequestId) document.querySelector("#price-status").textContent = "股價資料暫時無法載入，請檢查網路後重試。";
+      }
+    }
+
+    function showStock(code, name, industry, business, epsByYear) {
+      annualEPSByYear = epsByYear;
+      document.querySelector("#estimated-annual-eps").value = "";
+      previousYearPer = { high: null, low: null };
+      updateTargetPrices();
+      document.querySelector("#company-code").textContent = code;
+      document.querySelector("#company-name").textContent = name;
+      document.querySelector("#company-industry").textContent = `產業分類：${industry || "資料未提供"}`;
+      document.querySelector("#company-business").textContent = `主要業務簡介：${business || describeIndustry(industry)}`;
+      const body = document.querySelector("#eps-rows");
+      body.replaceChildren(...years.map(reportYear => {
+        const row = document.createElement("tr");
+        const label = document.createElement("td");
+        label.textContent = String(reportYear);
+        row.append(label);
+        for (const value of (epsByYear[reportYear] || [null, null, null, null])) {
+          const cell = document.createElement("td");
+          cell.textContent = value === null || value === undefined
+            ? (reportYear === currentYear ? "尚未公布" : "—")
+            : Number(value).toFixed(2);
+          if (value !== null && value !== undefined) cell.className = "eps";
+          row.append(cell);
+        }
+        const quarters = epsByYear[reportYear] || [];
+        const annualTotal = document.createElement("td");
+        const hasAllQuarters = quarters.length === 4 && quarters.every(value => value !== null && value !== undefined && Number.isFinite(Number(value)));
+        if (hasAllQuarters) {
+          annualTotal.textContent = quarters.reduce((sum, value) => sum + Number(value), 0).toFixed(2);
+          annualTotal.className = "eps";
+        }
+        row.append(annualTotal);
+        return row;
+      }));
+    }
+
+    async function lookup(code) {
+      const normalized = code.trim().replace(/\s/g, "");
+      if (!/^\d{4,6}$/.test(normalized)) {
+        status.textContent = "請輸入 4 至 6 位數的台股代碼。";
+        input.focus();
+        return;
+      }
+      status.style.color = "#66748a";
+      status.textContent = `${normalized} 資料查詢中…`;
+      button.disabled = true;
+      button.textContent = "查詢中…";
+      try {
+        const companiesPromise = getCompanies();
+        const params = new URLSearchParams({ dataset: "TaiwanStockFinancialStatements", data_id: normalized, start_date: `${firstYear}-01-01`, end_date: `${currentYear}-12-31` });
+        const [companies, statements] = await Promise.all([
+          companiesPromise,
+          fetchJson(`${api}?${params.toString()}`)
+        ]);
+        const company = companies.find(item => String(item.stock_id) === normalized);
+        if (!company) throw new Error(`查無台股代碼 ${normalized}。請確認代碼，或檢查網路連線。`);
+        const quarterly = statements.filter(item => item.type === "EPS");
+        const byYear = Object.fromEntries(years.map(reportYear => [reportYear, [null, null, null, null]]));
+        for (const item of quarterly) {
+          const reportYear = Number(String(item.date).slice(0, 4));
+          const month = Number(String(item.date).slice(5, 7));
+          const index = Math.ceil(month / 3) - 1;
+          if (byYear[reportYear] && index >= 0 && index < 4) byYear[reportYear][index] = item.value;
+        }
+        if (Object.values(byYear).every(values => values.every(value => value === null))) throw new Error(`${company.stock_name} 在 ${firstYear}–${currentYear} 年尚無可用的季度 EPS 資料。`);
+        const official = officialExamples[normalized] || {};
+        for (const reportYear of years) if (official[reportYear]) byYear[reportYear] = [...official[reportYear]];
+        const business = companyBusinessOverrides[normalized] || null;
+        showStock(normalized, company.stock_name, company.industry_category, business, byYear);
+        updateConsensusEstimate(normalized);
+        updatePreviousYearPER(normalized);
+        const hasOfficialValues = Object.keys(official).some(reportYear => years.includes(Number(reportYear)));
+        status.textContent = "查詢完成";
+        status.style.color = "#0d806b";
+        document.querySelector("#source-note").textContent = hasOfficialValues
+          ? "資料來源：台積電公告（2025–26 稀釋 EPS）；其他年度為 FinMind 基本 EPS"
+          : "資料來源：FinMind 台股財報（基本 EPS）";
+        document.querySelector("#source-link").href = hasOfficialValues
+          ? "https://pr.tsmc.com/chinese/news/3297"
+          : "https://finmind.github.io/tutor/TaiwanMarket/Fundamental/";
+        document.querySelector("#source-link").textContent = hasOfficialValues ? "台積電官方公告" : "資料集說明";
+        document.querySelector("#updated-at").textContent = `查詢時間：${new Date().toLocaleString("zh-TW")}`;
+        updateAnnualPrices(normalized, Number(priceYearSelect.value));
+        updatePositionTable(normalized, currentYear);
+      } catch (error) {
+        status.style.color = "#b42318";
+        status.textContent = error instanceof TypeError
+          ? "連線失敗。請確認網路連線，並使用 Chrome 或 Edge 開啟此頁面後重試。"
+          : (error.message || "資料查詢失敗，請稍後重試。");
+      } finally {
+        button.disabled = false;
+        button.textContent = "查詢 EPS";
+      }
+    }
+    form.addEventListener("submit", event => { event.preventDefault(); lookup(input.value); });
+    document.querySelector("#estimated-annual-eps").addEventListener("input", updateTargetPrices);
+    priceYearSelect.addEventListener("change", () => {
+      const normalized = input.value.trim().replace(/\s/g, "");
+      if (/^\d{4,6}$/.test(normalized)) updateAnnualPrices(normalized, Number(priceYearSelect.value));
+    });
+    input.value = "2330";
+    lookup("2330");
+  </script>
+</body>
+</html>
