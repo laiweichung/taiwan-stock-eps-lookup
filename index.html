@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f5f7fb">
+  <meta name="theme-color" content="#101317">
   <title>股票 EPS 查詢｜台股五年</title>
   <style>
     :root { color-scheme: light; --ink:#17243b; --muted:#66748a; --line:#e4eaf2; --blue:#2459d3; --blue-dark:#173c92; --paper:#fff; --bg:#f5f7fb; --green:#0d806b; }
@@ -81,6 +81,31 @@
     td { font-variant-numeric:tabular-nums; font-size:16px }
     tbody tr:last-child td { border-bottom:0 }
     .eps { color:var(--green); font-weight:800 }
+    .revenue-section { margin:0 0 22px; }
+    .revenue-heading { margin:0 0 8px; font-size:18px; }
+    .revenue-note { margin:0 0 10px; color:var(--muted); font-size:12px; }
+    .revenue-table { min-width:680px; table-layout:fixed; text-align:center; }
+    .revenue-table th,.revenue-table td { padding:10px 8px; text-align:center; }
+    .revenue-table th:first-child,.revenue-table td:first-child { background:#f5f7fb; font-weight:800; }
+    .revenue-table .rev-y0 { background:#eef3ff; }
+    .revenue-table .rev-y1 { background:#eaf7f2; }
+    .revenue-table .rev-y2 { background:#fff4e5; }
+    .revenue-table .rev-y3 { background:#f5edff; }
+    .revenue-table .rev-y4 { background:#e9f6fb; }
+    .revenue-table thead th { font-weight:800; }
+    .revenue-table td { font-size:14px; }
+    .revenue-chart-wrap { margin:12px 0 14px; padding:14px 12px 8px; border-radius:12px; background:#111315; color:#f5f5f5; overflow:hidden; }
+    .revenue-chart-wrap svg { display:block; width:100%; height:auto; }
+    .revenue-chart-grid { stroke:#303438; stroke-width:1; }
+    .revenue-chart-month { fill:#e5e7eb; font-size:13px; }
+    .revenue-chart-axis { fill:#c5c9ce; font-size:12px; }
+    .revenue-chart-legend { font-size:14px; font-weight:700; }
+    .revenue-chart-line { fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+    .revenue-chart-point { stroke:#111315; stroke-width:1.2; }
+    .revenue-value { display:block; font-size:14px; font-weight:700; }
+    .revenue-yoy { display:block; margin-top:3px; color:#8b929a; font-size:11px; white-space:nowrap; }
+    .revenue-table td { padding:8px 5px; }
+    .revenue-table th:first-child,.revenue-table td:first-child { white-space:nowrap; }
     .sources { display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; margin-top:17px; color:var(--muted); font-size:12px }
     a { color:var(--blue); text-decoration:none } a:hover { text-decoration:underline }
     .status { min-height:21px; margin-top:8px; color:#b42318; font-size:13px }
@@ -88,6 +113,40 @@
     @media(max-width:560px) { main { margin:32px auto } .search,.result { padding:20px 16px } .input-row { gap:8px; flex-wrap:wrap } input { flex:1 1 180px } #price-year { flex:1 1 100px; width:auto } button { min-width:88px; flex:1 } .result-top { align-items:center } .price-summary { grid-template-columns:repeat(2,minmax(0,1fr)) } .current-market-card { grid-column:1 / -1 } .consensus-stats { grid-template-columns:repeat(2,minmax(0,1fr)) } }
     @media(max-width:700px) { .estimate-panel { grid-template-columns:1fr 1fr } }
     @media(max-width:420px) { .estimate-panel { grid-template-columns:1fr } }
+
+    /* 全站深色模式 */
+    :root { color-scheme: dark; --ink:#edf2f7; --muted:#a3adba; --line:#303841; --blue:#6d9cff; --blue-dark:#9bbaff; --paper:#191e24; --bg:#101317; --green:#55d6a5; }
+    body { background:radial-gradient(ellipse at 90% -10%,#1c2a40 0,transparent 34rem),var(--bg); color:var(--ink); }
+    .panel { background:var(--paper); box-shadow:0 16px 50px #0005; }
+    .search { background:linear-gradient(120deg,#1d242c,#171d24); }
+    input, select { border-color:#46515e; background:#11171d; color:var(--ink); }
+    input::placeholder { color:#7f8b99; }
+    .price-card,.estimate-panel { background:#202830; }
+    .history-chart { background:#11161c; }
+    .chart-grid { stroke:#303943; }
+    .chart-focus { fill:#19212a; }
+    .chart-tooltip { background:#202830; color:var(--ink); border-color:#46515e; }
+    .estimate-value,.estimate-consensus { background:#151b21; color:var(--ink); }
+    .estimate-consensus strong,.estimate-group label,.estimate-label { color:var(--ink); }
+    .consensus-stat { background:#242d36; }
+    .consensus-range { color:#9bbaff; }
+    .year-pill { background:#26364e; color:#b9d0ff; }
+    .table-wrap { border-color:var(--line); }
+    th { background:#252e38; color:#c1cad5; }
+    td { color:#e3e9ef; }
+    .revenue-table th:first-child,.revenue-table td:first-child { background:#252d36; color:#f1f5f9; }
+    .revenue-table .rev-y0 { background:#20314a; }
+    .revenue-table .rev-y1 { background:#1e3932; }
+    .revenue-table .rev-y2 { background:#413321; }
+    .revenue-table .rev-y3 { background:#352944; }
+    .revenue-table .rev-y4 { background:#1d3742; }
+    .revenue-yoy { color:#aab4bf; }
+    .position-wrap { border-color:#39434e; }
+    .position-grid td { border-color:#39434e; color:#edf2f7; }
+    .position-grid .position-percent { background:#424b55; }
+    .sources, footer { color:var(--muted); }
+    a { color:#8db2ff; }
+    .industry-note,.price-date,.price-status { color:#a3adba; }
   </style>
 </head>
 <body>
@@ -122,6 +181,21 @@
           <div class="price-card"><div class="price-label" id="annual-per-low-label">年度本益比最低</div><div class="price-value" id="annual-per-low">—</div><div class="price-date" id="annual-per-low-date"></div></div>
         </div>
         <div class="price-status" id="price-status" role="status" aria-live="polite">年度股價資料載入中…</div>
+        <section class="revenue-section" aria-label="近五年月營收">
+          <h3 class="revenue-heading">近五年月營收</h3>
+          <p class="revenue-note">折線圖比較近五年各月營收；下方表格顯示營收金額及年增率。單位：百萬元。</p>
+          <div class="revenue-chart-wrap">
+            <svg id="monthly-revenue-chart" viewBox="0 0 900 350" role="img" aria-label="近五年月營收比較折線圖">
+              <text x="450" y="175" text-anchor="middle" class="revenue-chart-axis">輸入股票代碼後載入月營收…</text>
+            </svg>
+          </div>
+          <div class="table-wrap">
+            <table class="revenue-table">
+              <thead id="revenue-head"><tr><th scope="col">月份</th></tr></thead>
+              <tbody id="revenue-rows"><tr><td>資料載入中…</td></tr></tbody>
+            </table>
+          </div>
+        </section>
         <div class="table-wrap">
           <table>
             <thead><tr><th scope="col">年度</th><th scope="col">Q1 EPS</th><th scope="col">Q2 EPS</th><th scope="col">Q3 EPS</th><th scope="col">Q4 EPS</th><th scope="col">年度累計 EPS</th></tr></thead>
@@ -578,6 +652,107 @@
       }
     }
 
+    async function updateMonthlyRevenue(code) {
+      const head = document.querySelector("#revenue-head");
+      const body = document.querySelector("#revenue-rows");
+      const chart = document.querySelector("#monthly-revenue-chart");
+      head.replaceChildren();
+      body.replaceChildren();
+      chart.innerHTML = '<text x="450" y="175" text-anchor="middle" class="revenue-chart-axis">正在載入近五年月營收…</text>';
+      const headerRow = document.createElement("tr");
+      const monthHeader = document.createElement("th");
+      monthHeader.textContent = "年增／百萬";
+      headerRow.append(monthHeader);
+      for (let i = years.length - 1; i >= 0; i--) {
+        const th = document.createElement("th");
+        th.textContent = String(years[i]);
+        th.className = `rev-y${4-i}`;
+        headerRow.append(th);
+      }
+      head.append(headerRow);
+      try {
+        const params = new URLSearchParams({
+          dataset: "TaiwanStockMonthRevenue",
+          data_id: code,
+          start_date: `${firstYear}-01-01`,
+          end_date: `${currentYear}-12-31`
+        });
+        const data = await fetchJson(`${api}?${params.toString()}`);
+        const monthly = new Map();
+        for (const item of data) {
+          const date = String(item.date || "");
+          const year = Number(item.revenue_year || date.slice(0, 4));
+          const month = Number(item.revenue_month || date.slice(5, 7));
+          const revenue = Number(String(item.revenue).replace(/,/g, ""));
+          if (years.includes(year) && month >= 1 && month <= 12 && Number.isFinite(revenue)) {
+            monthly.set(`${year}-${month}`, revenue / 1000);
+          }
+        }
+        const palette = ["#8050ad", "#19bdb7", "#ef5148", "#2196d2", "#f5a623"];
+        const W=900, H=350, left=62, right=112, top=18, bottom=42;
+        const plotW=W-left-right, plotH=H-top-bottom;
+        const values=[...monthly.values()];
+        if (!values.length) throw new Error("查無近五年月營收資料");
+        const max=Math.max(...values, 1);
+        const ceiling=Math.ceil(max/500)*500 || 500;
+        const x=m=>left+(m-1)/11*plotW;
+        const y=v=>top+plotH-(v/ceiling)*plotH;
+        const grid=[];
+        for(let i=0;i<=4;i++){
+          const val=ceiling*i/4, py=y(val);
+          grid.push(`<line class="revenue-chart-grid" x1="${left}" y1="${py}" x2="${W-right}" y2="${py}"/><text class="revenue-chart-axis" x="${left-9}" y="${py+4}" text-anchor="end">${Math.round(val).toLocaleString("zh-TW")}</text>`);
+        }
+        const months=Array.from({length:12},(_,i)=>`<text class="revenue-chart-month" x="${x(i+1)}" y="${H-12}" text-anchor="middle">${String(i+1).padStart(2,"0")}</text>`).join("");
+        const lines=[];
+        years.forEach((year,index)=>{
+          const color=palette[index], pts=[];
+          for(let m=1;m<=12;m++){
+            const v=monthly.get(`${year}-${m}`);
+            if(v!==undefined) pts.push({m,v});
+          }
+          if(pts.length){
+            const pointString=pts.map(p=>`${x(p.m).toFixed(1)},${y(p.v).toFixed(1)}`).join(" ");
+            lines.push(`<polyline class="revenue-chart-line" stroke="${color}" points="${pointString}"/>`);
+            lines.push(pts.map(p=>`<circle class="revenue-chart-point" cx="${x(p.m)}" cy="${y(p.v)}" r="4.2" fill="${color}"><title>${year}年${p.m}月：${p.v.toLocaleString("zh-TW",{maximumFractionDigits:1})} 百萬元</title></circle>`).join(""));
+          }
+        });
+        const legend=[...years].reverse().map((year,position)=>{const index=years.indexOf(year);return `<circle cx="${W-right+22}" cy="${top+position*48+8}" r="6" fill="${palette[index]}"/><text class="revenue-chart-legend" x="${W-right+38}" y="${top+position*48+13}" fill="${palette[index]}">${year}</text>`;}).join("");
+        chart.innerHTML=`${grid.join("")}${months}${lines.join("")}${legend}<text class="revenue-chart-axis" x="10" y="${top+12}">百萬</text>`;
+        for (let month = 12; month >= 1; month--) {
+          const tr = document.createElement("tr");
+          const label = document.createElement("td");
+          label.textContent = `${String(month).padStart(2,"0")}月`;
+          tr.append(label);
+          for (let i = years.length - 1; i >= 0; i--) {
+            const year=years[i], value=monthly.get(`${year}-${month}`);
+            const previous=monthly.get(`${year-1}-${month}`);
+            const td=document.createElement("td");
+            td.className=`rev-y${4-i}`;
+            if(value===undefined) td.textContent="—";
+            else {
+              const amount=document.createElement("span");
+              amount.className="revenue-value";
+              amount.textContent=Math.round(value).toLocaleString("zh-TW");
+              const yoy=document.createElement("span");
+              yoy.className="revenue-yoy";
+              yoy.textContent=previous!==undefined && previous!==0 ? `(${((value-previous)/previous*100).toFixed(2)}%)` : "—";
+              td.append(amount,yoy);
+            }
+            tr.append(td);
+          }
+          body.append(tr);
+        }
+      } catch (error) {
+        chart.innerHTML=`<text x="450" y="175" text-anchor="middle" class="revenue-chart-axis">${String(error.message || "月營收資料載入失敗").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}</text>`;
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = years.length + 1;
+        td.textContent = "月營收資料暫時無法載入，請稍後重試。";
+        tr.append(td);
+        body.append(tr);
+      }
+    }
+
     function showStock(code, name, industry, business, epsByYear) {
       annualEPSByYear = epsByYear;
       document.querySelector("#estimated-annual-eps").value = "";
@@ -646,6 +821,7 @@
         for (const reportYear of years) if (official[reportYear]) byYear[reportYear] = [...official[reportYear]];
         const business = companyBusinessOverrides[normalized] || null;
         showStock(normalized, company.stock_name, company.industry_category, business, byYear);
+        updateMonthlyRevenue(normalized);
         updateConsensusEstimate(normalized);
         updatePreviousYearPER(normalized);
         const hasOfficialValues = Object.keys(official).some(reportYear => years.includes(Number(reportYear)));
