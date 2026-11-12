@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#101317">
-  <title>股票 EPS 查詢｜台股五年</title>
+  <title>台股工具｜EPS 查詢與開盤前資訊</title>
   <style>
     :root { color-scheme: light; --ink:#17243b; --muted:#66748a; --line:#e4eaf2; --blue:#2459d3; --blue-dark:#173c92; --paper:#fff; --bg:#f5f7fb; --green:#0d806b; }
     * { box-sizing:border-box }
@@ -94,6 +94,15 @@
     .revenue-table .rev-y4 { background:#e9f6fb; }
     .revenue-table thead th { font-weight:800; }
     .revenue-table td { font-size:14px; }
+    .revenue-scroll-area { height:auto; max-height:none; overflow-x:auto; overflow-y:hidden; }
+    .revenue-scroll-area .revenue-table { display:block; table-layout:fixed; width:100%; }
+    .revenue-scroll-area .revenue-table thead { display:table; width:calc(100% - 14px); table-layout:fixed; }
+    .revenue-scroll-area .revenue-table tbody { display:block; height:250px; overflow-y:scroll; overflow-x:hidden; scrollbar-color:#65758b #1d242c; scrollbar-width:auto; }
+    .revenue-scroll-area .revenue-table tbody tr { display:table; width:100%; table-layout:fixed; }
+    .revenue-scroll-area .revenue-table tbody::-webkit-scrollbar { width:14px; }
+    .revenue-scroll-area .revenue-table tbody::-webkit-scrollbar-track { background:#1d242c; }
+    .revenue-scroll-area .revenue-table tbody::-webkit-scrollbar-thumb { background:#65758b; border:3px solid #1d242c; border-radius:9px; }
+    .revenue-scroll-area .revenue-table thead th { position:sticky; top:0; z-index:2; }
     .revenue-chart-wrap { margin:12px 0 14px; padding:14px 12px 8px; border-radius:12px; background:#111315; color:#f5f5f5; overflow:hidden; }
     .revenue-chart-wrap svg { display:block; width:100%; height:auto; }
     .revenue-chart-grid { stroke:#303438; stroke-width:1; }
@@ -110,7 +119,78 @@
     a { color:var(--blue); text-decoration:none } a:hover { text-decoration:underline }
     .status { min-height:21px; margin-top:8px; color:#b42318; font-size:13px }
     footer { margin:18px 4px 0; color:var(--muted); font-size:12px }
+.margin-history { margin:22px 0 18px; padding:18px; border:1px solid #303841; border-radius:14px; background:#191e24; color:#edf2f7; }
+    .margin-history-head { display:flex; align-items:center; justify-content:flex-end; gap:12px; margin-bottom:14px; }
+    .margin-history-title { margin:0; font-size:20px; }
+    .margin-history-status { color:#a3adba; font-size:12px; }
+    .net-short-card { margin:0 0 14px; padding:14px; border:1px solid #39434e; border-radius:10px; background:#151b21; }
+    .net-short-wrap { height:314px; overflow-y:scroll; overflow-x:auto; }
+    .net-short-table { min-width:600px; }
+    .margin-chart-card { margin:0 0 14px; padding:14px; border:1px solid #39434e; border-radius:10px; background:#151b21; }
+    .margin-chart-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
+    .margin-chart-title { margin:0; color:#edf2f7; font-size:16px; }
+    .margin-chart-legend { display:flex; flex-wrap:wrap; gap:12px; color:#a3adba; font-size:12px; }
+    .legend-chip { display:inline-flex; align-items:center; gap:6px; }
+    .legend-swatch { width:10px; height:10px; border-radius:50%; background:#f0b64d; }
+    .legend-swatch.finance { border-radius:2px; background:#6d9cff; }
+    .margin-chart-svg { display:block; width:100%; height:auto; }
+    .margin-chart-grid { stroke:#303943; stroke-width:1; }
+    .margin-chart-axis { fill:#a3adba; font-size:11px; }
+    .margin-chart-finance { fill:#6d9cff; opacity:.8; }
+    .margin-chart-index { fill:none; stroke:#f0b64d; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+    .margin-table-wrap { height:314px; overflow-y:scroll; overflow-x:auto; border:1px solid #39434e; border-radius:10px; scrollbar-color:#65758b #1d242c; scrollbar-width:auto; }
+    .finance-scroll-area,.net-short-wrap { height:auto; max-height:none; overflow-x:auto; overflow-y:hidden; }
+    .finance-scroll-area .margin-history-table,.net-short-wrap .margin-history-table { display:block; table-layout:fixed; width:100%; }
+    .finance-scroll-area .margin-history-table thead,.net-short-wrap .margin-history-table thead { display:table; width:calc(100% - 14px); table-layout:fixed; }
+    .finance-scroll-area .margin-history-table tbody { display:block; height:230px; overflow-y:scroll; overflow-x:hidden; scrollbar-color:#65758b #1d242c; scrollbar-width:auto; }
+    .net-short-wrap .margin-history-table tbody { display:block; height:230px; overflow-y:scroll; overflow-x:hidden; scrollbar-color:#65758b #1d242c; scrollbar-width:auto; }
+    .finance-scroll-area .margin-history-table tbody tr,.net-short-wrap .margin-history-table tbody tr { display:table; width:100%; table-layout:fixed; }
+    .finance-scroll-area .margin-history-table tbody::-webkit-scrollbar,.net-short-wrap .margin-history-table tbody::-webkit-scrollbar { width:14px; }
+    .finance-scroll-area .margin-history-table tbody::-webkit-scrollbar-track,.net-short-wrap .margin-history-table tbody::-webkit-scrollbar-track { background:#1d242c; }
+    .finance-scroll-area .margin-history-table tbody::-webkit-scrollbar-thumb,.net-short-wrap .margin-history-table tbody::-webkit-scrollbar-thumb { background:#65758b; border:3px solid #1d242c; border-radius:9px; }
+    .margin-history-table thead { position:sticky; top:0; z-index:2; }
+    .margin-history-table { width:100%; min-width:700px; border-collapse:collapse; text-align:right; font-variant-numeric:tabular-nums; }
+    .margin-history-table th,.margin-history-table td { padding:10px 12px; border:1px solid #39434e; }
+    .margin-history-table thead th { background:#354153; color:#f2f5f9; text-align:center; font-size:14px; }
+    .margin-history-table tbody tr:nth-child(odd) { background:#1d242c; }
+    .margin-history-table tbody tr:nth-child(even) { background:#242d36; }
+    .margin-history-table td:first-child { text-align:center; white-space:nowrap; }
+    .margin-history-table .market-positive { color:#ff6570; }
+    .margin-history-table .market-negative { color:#55d6a5; }
+    .margin-history-note { margin:12px 2px 0; color:#a3adba; font-size:12px; }
+    .us-index-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin-top:22px; }
+    .us-index-card { min-width:0; padding:20px; border:1px solid #303841; border-radius:14px; background:#1d222b; display:grid; grid-template-rows:auto 58px auto auto auto; gap:8px; }
+    .us-index-card h2 { margin:0; color:#edf2f7; font-size:clamp(18px,2vw,25px); font-weight:600; }
+    .us-index-spark { display:block; width:100%; height:58px; overflow:visible; }
+    .us-index-spark polyline { fill:none; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+    .us-index-spark .trend-up { stroke:#ff626f; }
+    .us-index-spark .trend-down { stroke:#43c98f; }
+    .us-index-spark .trend-flat { stroke:#9aa5b3; }
+    .us-index-divider { border-top:2px dashed #657080; }
+    .us-index-value { color:#edf2f7; font-size:clamp(28px,3vw,40px); line-height:1.15; font-weight:700; font-variant-numeric:tabular-nums; }
+    .us-index-change { font-size:clamp(17px,2vw,24px); font-variant-numeric:tabular-nums; }
+    .us-index-change.trend-up { color:#ff626f; }
+    .us-index-change.trend-down { color:#43c98f; }
+    .us-index-change.trend-flat { color:#a3adba; }
+    .us-index-date { color:#8f9baa; font-size:12px; }
+    .market-data-note { margin:16px 0 0; color:var(--muted); font-size:12px; }
+    .market-data-note a { font-weight:700; }
+    @media(max-width:620px) { .us-index-grid { grid-template-columns:1fr; gap:12px; } .us-index-card { padding:17px; } }
+    .market-data-note { margin:16px 0 0; color:var(--muted); font-size:12px; }
+    .market-data-note a { font-weight:700; }
+    .tabs { display:flex; gap:8px; margin:24px 0 20px; padding:5px; border:1px solid var(--line); border-radius:13px; background:#171d24; width:max-content; max-width:100%; }
+    .tab-button { min-width:140px; height:42px; padding:0 18px; border-radius:9px; background:transparent; color:var(--muted); }
+    .tab-button[aria-selected="true"] { background:var(--blue); color:#fff; }
+    .tab-panel[hidden] { display:none; }
+    .preopen-content { padding:24px; }
+    .preopen-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin-top:18px; }
+    .preopen-card { padding:18px; border:1px solid var(--line); border-radius:14px; background:#202830; }
+    .preopen-card h2 { margin:0 0 8px; font-size:18px; }
+    .preopen-card p { margin:0; color:var(--muted); font-size:14px; }
+    .preopen-links { display:flex; flex-wrap:wrap; gap:10px; margin-top:18px; }
+    .preopen-links a { display:inline-flex; align-items:center; min-height:42px; padding:0 14px; border:1px solid var(--line); border-radius:10px; background:#202830; font-weight:700; }
     @media(max-width:560px) { main { margin:32px auto } .search,.result { padding:20px 16px } .input-row { gap:8px; flex-wrap:wrap } input { flex:1 1 180px } #price-year { flex:1 1 100px; width:auto } button { min-width:88px; flex:1 } .result-top { align-items:center } .price-summary { grid-template-columns:repeat(2,minmax(0,1fr)) } .current-market-card { grid-column:1 / -1 } .consensus-stats { grid-template-columns:repeat(2,minmax(0,1fr)) } }
+    @media(max-width:560px) { .preopen-content { padding:20px 16px; } .us-market-widget { padding:6px; } .preopen-grid { grid-template-columns:1fr; } .tab-button { min-width:0; flex:1; padding:0 12px; } .tabs { width:100%; } }
     @media(max-width:700px) { .estimate-panel { grid-template-columns:1fr 1fr } }
     @media(max-width:420px) { .estimate-panel { grid-template-columns:1fr } }
 
@@ -151,6 +231,11 @@
 </head>
 <body>
   <main>
+    <nav class="tabs" role="tablist" aria-label="工具頁簽">
+      <button class="tab-button" id="tab-eps" type="button" role="tab" aria-selected="true" aria-controls="panel-eps">股票 EPS 查詢</button>
+      <button class="tab-button" id="tab-preopen" type="button" role="tab" aria-selected="false" aria-controls="panel-preopen" tabindex="-1">開盤前資訊</button>
+    </nav>
+    <div class="tab-panel" id="panel-eps" role="tabpanel" aria-labelledby="tab-eps">
     <div class="eyebrow">Earnings lookup</div>
     <h1>股票 EPS 查詢</h1>
     <p class="intro">輸入上市或上櫃股票代碼，一次查看最近五個年度的各季每股盈餘。EPS 單位為新台幣元。</p>
@@ -189,7 +274,7 @@
               <text x="450" y="175" text-anchor="middle" class="revenue-chart-axis">輸入股票代碼後載入月營收…</text>
             </svg>
           </div>
-          <div class="table-wrap">
+          <div class="table-wrap revenue-scroll-area">
             <table class="revenue-table">
               <thead id="revenue-head"><tr><th scope="col">月份</th></tr></thead>
               <tbody id="revenue-rows"><tr><td>資料載入中…</td></tr></tbody>
@@ -243,9 +328,213 @@
         </section>
       </div>
     </section>
+    </div>
+    <section class="panel tab-panel" id="panel-preopen" role="tabpanel" aria-labelledby="tab-preopen" hidden>
+      <div class="preopen-content">
+        <div class="eyebrow">U.S. Markets</div>
+        <p class="intro">美股主要指數、台指期夜盤與台積電 ADR 行情，一頁掌握海外市場變化。</p>
+        <div class="us-index-grid" id="us-index-grid" aria-label="美股主要指數行情">
+          <article class="us-index-card" data-index-card="^DJI">
+            <h2>道瓊工業指數</h2><svg class="us-index-spark" viewBox="0 0 180 54" role="img" aria-label="道瓊近期走勢"></svg>
+            <div class="us-index-divider"></div><div class="us-index-value">載入中…</div><div class="us-index-change"></div><div class="us-index-date"></div>
+          </article>
+          <article class="us-index-card" data-index-card="^GSPC">
+            <h2>S&amp;P 500 指數</h2><svg class="us-index-spark" viewBox="0 0 180 54" role="img" aria-label="S&amp;P 500 近期走勢"></svg>
+            <div class="us-index-divider"></div><div class="us-index-value">載入中…</div><div class="us-index-change"></div><div class="us-index-date"></div>
+          </article>
+          <article class="us-index-card" data-index-card="^IXIC">
+            <h2>NASDAQ 指數</h2><svg class="us-index-spark" viewBox="0 0 180 54" role="img" aria-label="NASDAQ 近期走勢"></svg>
+            <div class="us-index-divider"></div><div class="us-index-value">載入中…</div><div class="us-index-change"></div><div class="us-index-date"></div>
+          </article>
+          <article class="us-index-card" data-index-card="^SOX">
+            <h2>費城半導體指數</h2><svg class="us-index-spark" viewBox="0 0 180 54" role="img" aria-label="費城半導體近期走勢"></svg>
+            <div class="us-index-divider"></div><div class="us-index-value">載入中…</div><div class="us-index-change"></div><div class="us-index-date"></div>
+          </article>
+          <article class="us-index-card" data-night-futures-card>
+            <h2>台指期夜盤</h2><svg class="us-index-spark" viewBox="0 0 180 54" role="img" aria-label="台指期夜盤近期走勢"></svg>
+            <div class="us-index-divider"></div><div class="us-index-value">載入中…</div><div class="us-index-change"></div><div class="us-index-date"></div>
+          </article>
+          <article class="us-index-card" data-index-card="TSM">
+            <h2>台積電 ADR</h2><svg class="us-index-spark" viewBox="0 0 180 54" role="img" aria-label="台積電 ADR 近期走勢"></svg>
+            <div class="us-index-divider"></div><div class="us-index-value">載入中…</div><div class="us-index-change"></div><div class="us-index-date"></div>
+          </article>
+        </div>
+        <p class="market-data-note">資料來源：<a href="https://finmind.github.io/tutor/UnitedStatesMarket/Technical/" target="_blank" rel="noopener noreferrer">FinMind 美股日行情</a> 與 <a href="https://finmind.github.io/tutor/TaiwanMarket/Derivative/" target="_blank" rel="noopener noreferrer">台灣期貨日行情</a>；每日更新，顯示最近可取得的收盤資料，可能延遲。</p>
+        <section class="margin-history" aria-label="融資融券歷史資料">
+          <div class="margin-history-head">
+            <span class="margin-history-status" id="margin-history-status" role="status" aria-live="polite">資料載入中…</span>
+          </div>
+          <section class="net-short-card" aria-label="台指期三大法人淨空單口數近一個月資料">
+            <div class="margin-chart-head"><h3 class="margin-chart-title">台指期三大法人淨空單口數</h3><span class="margin-history-status" id="net-short-status">近一個月</span></div>
+            <section class="margin-chart-card net-short-chart-card" aria-label="加權指數與台指期淨空單一個月走勢圖">
+              <div class="margin-chart-head"><h3 class="margin-chart-title">加權指數與淨空單口數</h3><div class="margin-chart-legend"><span class="legend-chip"><i class="legend-swatch"></i>加權指數</span><span class="legend-chip"><i class="legend-swatch finance"></i>三大法人淨空單</span></div></div>
+              <svg id="net-short-history-chart" class="margin-chart-svg" viewBox="0 0 900 300" role="img" aria-label="加權指數折線與三大法人淨空單柱狀圖"><text x="450" y="150" text-anchor="middle" class="margin-chart-axis">資料載入中…</text></svg>
+            </section>
+            <div class="margin-table-wrap net-short-wrap">
+              <table class="margin-history-table net-short-table">
+                <colgroup><col style="width:16%"><col style="width:21%"><col style="width:21%"><col style="width:21%"><col style="width:21%"></colgroup>
+                <thead><tr><th scope="col">日期</th><th scope="col">外資</th><th scope="col">投信</th><th scope="col">自營商</th><th scope="col">三大法人合計</th></tr></thead>
+                <tbody id="net-short-rows"><tr><td colspan="5">資料載入中…</td></tr></tbody>
+              </table>
+            </div>
+            <p class="margin-history-note">淨空單＝空方未平倉口數－多方未平倉口數；正值代表淨空單，負值代表淨多單。</p>
+          </section>
+          <section class="margin-chart-card" aria-label="融資餘額與加權指數走勢圖">
+            <div class="margin-chart-head">
+              <h3 class="margin-chart-title">加權指數與融資餘額</h3>
+              <div class="margin-chart-legend"><span class="legend-chip"><i class="legend-swatch"></i>加權指數</span><span class="legend-chip"><i class="legend-swatch finance"></i>融資餘額（億元）</span></div>
+            </div>
+            <svg id="margin-history-chart" class="margin-chart-svg" viewBox="0 0 900 300" role="img" aria-label="加權指數折線與融資餘額柱狀圖"><text x="450" y="150" text-anchor="middle" class="margin-chart-axis">資料載入中…</text></svg>
+          </section>
+          <div class="margin-table-wrap finance-scroll-area">
+            <table class="margin-history-table">
+              <colgroup><col style="width:16%"><col style="width:21%"><col style="width:21%"><col style="width:21%"><col style="width:21%"></colgroup>
+              <thead>
+                <tr><th rowspan="2" scope="col">日期</th><th colspan="2" scope="colgroup">融資金額（億元）</th><th colspan="2" scope="colgroup">融券餘額（張）</th></tr>
+                <tr><th scope="col">餘額</th><th scope="col">增減</th><th scope="col">餘額</th><th scope="col">增減</th></tr>
+              </thead>
+              <tbody id="margin-history-rows"><tr><td colspan="5">資料載入中…</td></tr></tbody>
+            </table>
+          </div>
+          <p class="margin-history-note">資料來源：FinMind 全市場融資融券日資料。維持率未列入：可取得的全市場日資料未提供此欄位，不以估算值代替。</p>
+        </section>
+
+      </div>
+    </section>
     <footer>資料來自第三方公開財報資料服務，公告與更正可能造成數值差異；投資判斷請以公司公告及正式財報為準。</footer>
   </main>
   <script>
+    const tabButtons = [...document.querySelectorAll("[role=tab]")];
+    const tabPanels = [...document.querySelectorAll("[role=tabpanel]")];
+    function activateTab(tab) {
+      tabButtons.forEach(button => {
+        const selected = button === tab;
+        button.setAttribute("aria-selected", String(selected));
+        button.tabIndex = selected ? 0 : -1;
+      });
+      tabPanels.forEach(panel => { panel.hidden = panel.id !== tab.getAttribute("aria-controls"); });
+      if (tab.id === "tab-preopen" && !marginLoadedMarket) loadMarginCharts(document.querySelector(".market-button[aria-pressed=true]").dataset.market);
+    }
+    tabButtons.forEach((tab, index) => {
+      tab.addEventListener("click", () => activateTab(tab));
+      tab.addEventListener("keydown", event => {
+        if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+        event.preventDefault();
+        const next = event.key === "Home" ? 0 : event.key === "End" ? tabButtons.length - 1 : (index + (event.key === "ArrowRight" ? 1 : tabButtons.length - 1)) % tabButtons.length;
+        tabButtons[next].focus();
+        activateTab(tabButtons[next]);
+      });
+    });
+    function drawMarginHistoryChart(marginRows,indexData) {
+      const svg=document.querySelector('#margin-history-chart');
+      const closeByDate=new Map(indexData.map(item=>[String(item.date||''),Number(item.close)]).filter(entry=>Number.isFinite(entry[1])));
+      const rows=[...marginRows].sort((a,b)=>a.date.localeCompare(b.date)).map(row=>({...row,index:closeByDate.get(row.date)}));
+      const hasIndex=rows.some(row=>Number.isFinite(row.index));
+      if(!rows.length) { svg.innerHTML='<text x="450" y="150" text-anchor="middle" class="margin-chart-axis">查無走勢資料</text>'; return; }
+      const W=900,H=300,left=68,right=66,top=18,bottom=42,pw=W-left-right,ph=H-top-bottom;
+      const fin=rows.map(row=>row.finance/100000000), maxFin=Math.max(...fin), minFin=Math.min(...fin), finLo=Math.max(0,minFin-(maxFin-minFin)*.12), finHi=maxFin+(maxFin-minFin)*.12||1;
+      const indices=rows.map(row=>row.index).filter(Number.isFinite), minIndex=indices.length?Math.min(...indices):0, maxIndex=indices.length?Math.max(...indices):1, indexPad=(maxIndex-minIndex)*.12||Math.max(maxIndex*.01,1), indexLo=minIndex-indexPad,indexHi=maxIndex+indexPad;
+      const x=i=>left+(i/(rows.length-1||1))*pw, yIndex=v=>top+(indexHi-v)/(indexHi-indexLo)*ph, yFin=v=>top+(finHi-v)/(finHi-finLo)*ph;
+      const grid=Array.from({length:5},(_,i)=>{const v=indexLo+(indexHi-indexLo)*i/4, y=top+ph*i/4;return '<line class="margin-chart-grid" x1="'+left+'" y1="'+y+'" x2="'+(W-right)+'" y2="'+y+'"/><text class="margin-chart-axis" x="'+(left-8)+'" y="'+(y+4)+'" text-anchor="end">'+Math.round(v).toLocaleString('zh-TW')+'</text>';}).join('');
+      const bars=rows.map((row,i)=>{const bw=Math.max(3,Math.min(18,pw/rows.length*.56)), yy=yFin(row.finance/100000000), h=Math.max(1,top+ph-yy);return '<rect class="margin-chart-finance" x="'+(x(i)-bw/2)+'" y="'+yy+'" width="'+bw+'" height="'+h+'"><title>'+row.date+'｜融資餘額 '+(row.finance/100000000).toFixed(2)+' 億元</title></rect>';}).join('');
+      const points=rows.filter(row=>Number.isFinite(row.index)).map(row=>x(rows.indexOf(row)).toFixed(1)+','+yIndex(row.index).toFixed(1)).join(' ');
+      const line=hasIndex?'<polyline class="margin-chart-index" points="'+points+'"/>':'';
+      const ticks=[0,Math.floor((rows.length-1)/2),rows.length-1].filter((v,i,a)=>a.indexOf(v)===i).map(i=>'<text class="margin-chart-axis" x="'+x(i)+'" y="'+(H-12)+'" text-anchor="middle">'+rows[i].date.slice(5).replace('-','/')+'</text>').join('');
+      svg.innerHTML=grid+bars+line+ticks+'<text class="margin-chart-axis" x="'+(W-right+8)+'" y="'+(top+10)+'">'+maxFin.toFixed(0)+' 億</text>'+'<text class="margin-chart-axis" x="'+(W-right+8)+'" y="'+(top+ph)+'">'+minFin.toFixed(0)+' 億</text>';
+      if(!hasIndex) svg.innerHTML+='<text x="450" y="150" text-anchor="middle" class="margin-chart-axis">加權指數資料暫時無法載入</text>';
+    }
+    function drawNetShortChart(shortDays,indexData) {
+      const svg=document.querySelector('#net-short-history-chart');
+      const indexMap=new Map(indexData.map(item=>[String(item.date||''),Number(item.close??item.Close)]).filter(entry=>Number.isFinite(entry[1])));
+      const names=['外資','投信','自營商'];
+      const rows=shortDays.map(([date,values])=>({date,total:names.every(name=>Number.isFinite(values[name]))?names.reduce((sum,name)=>sum+values[name],0):null,index:indexMap.get(date)})).filter(row=>Number.isFinite(row.total)).sort((a,b)=>a.date.localeCompare(b.date));
+      if(!rows.length) { svg.innerHTML='<text x="450" y="150" text-anchor="middle" class="margin-chart-axis">淨空單資料不足</text>'; return; }
+      const W=900,H=300,left=68,right=78,top=18,bottom=42,pw=W-left-right,ph=H-top-bottom;
+      const totals=rows.map(row=>row.total), shortMin=Math.min(0,...totals), shortMax=Math.max(0,...totals), shortPad=(shortMax-shortMin)*.12||1, shortLo=shortMin-shortPad, shortHi=shortMax+shortPad;
+      const indices=rows.map(row=>row.index).filter(Number.isFinite), indexMin=indices.length?Math.min(...indices):0, indexMax=indices.length?Math.max(...indices):1, indexPad=(indexMax-indexMin)*.12||Math.max(indexMax*.01,1), indexLo=indexMin-indexPad,indexHi=indexMax+indexPad;
+      const x=i=>left+(i/(rows.length-1||1))*pw, yIndex=v=>top+(indexHi-v)/(indexHi-indexLo)*ph, yShort=v=>top+(shortHi-v)/(shortHi-shortLo)*ph;
+      const grid=Array.from({length:5},(_,i)=>{const value=indexLo+(indexHi-indexLo)*i/4,y=top+ph*i/4;return '<line class="margin-chart-grid" x1="'+left+'" y1="'+y+'" x2="'+(W-right)+'" y2="'+y+'"/><text class="margin-chart-axis" x="'+(left-8)+'" y="'+(y+4)+'" text-anchor="end">'+Math.round(value).toLocaleString('zh-TW')+'</text>';}).join('');
+      const zeroY=yShort(0), bars=rows.map((row,i)=>{const width=Math.max(3,Math.min(18,pw/rows.length*.56)),valueY=yShort(row.total),y=Math.min(zeroY,valueY),height=Math.max(1,Math.abs(zeroY-valueY));return '<rect class="margin-chart-finance" x="'+(x(i)-width/2)+'" y="'+y+'" width="'+width+'" height="'+height+'"><title>'+row.date+'｜三大法人淨空單 '+row.total.toLocaleString('zh-TW')+' 口</title></rect>';}).join('');
+      const points=rows.filter(row=>Number.isFinite(row.index)).map(row=>x(rows.indexOf(row)).toFixed(1)+','+yIndex(row.index).toFixed(1)).join(' '),line=indices.length?'<polyline class="margin-chart-index" points="'+points+'"/>':'';
+      const ticks=[0,Math.floor((rows.length-1)/2),rows.length-1].filter((value,index,array)=>array.indexOf(value)===index).map(i=>'<text class="margin-chart-axis" x="'+x(i)+'" y="'+(H-12)+'" text-anchor="middle">'+rows[i].date.slice(5).replace('-','/')+'</text>').join('');
+      svg.innerHTML=grid+bars+line+ticks+'<text class="margin-chart-axis" x="'+(W-right+8)+'" y="'+(top+10)+'">'+shortMax.toLocaleString('zh-TW')+' 口</text><text class="margin-chart-axis" x="'+(W-right+8)+'" y="'+(top+ph)+'">'+shortMin.toLocaleString('zh-TW')+' 口</text>';
+      if(!indices.length) svg.innerHTML+='<text x="450" y="150" text-anchor="middle" class="margin-chart-axis">加權指數資料暫時無法載入</text>';
+    }
+    async function loadMarginHistory() {
+      const status=document.querySelector('#margin-history-status');
+      const body=document.querySelector('#margin-history-rows');
+      const end=new Date();
+      const start=new Date(); start.setDate(start.getDate()-55);
+      const iso=d=>d.toISOString().slice(0,10);
+      const params=new URLSearchParams({dataset:'TaiwanStockTotalMarginPurchaseShortSale',start_date:iso(start),end_date:iso(end)});
+      try {
+        const result=await fetchJson(`${api}?${params.toString()}`);
+        const daily=new Map();
+        for(const item of result) {
+          const day=String(item.date||'');
+          if(!day) continue;
+          if(!daily.has(day)) daily.set(day,{});
+          const group=daily.get(day);
+          const value=Number(String(item.TodayBalance??'').replace(/,/g,''));
+          const prior=Number(String(item.YesBalance??'').replace(/,/g,''));
+          if(item.name==='MarginPurchaseMoney'&&Number.isFinite(value)) { group.finance=value; group.financeChange=Number.isFinite(prior)?value-prior:null; }
+          if(item.name==='ShortSale'&&Number.isFinite(value)) { group.short=value; group.shortChange=Number.isFinite(prior)?value-prior:null; }
+        }
+        const rows=[...daily.entries()].map(([date,value])=>({date,...value})).filter(row=>Number.isFinite(row.finance)&&Number.isFinite(row.short)).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,20);
+        if(!rows.length) throw new Error('目前沒有融資融券資料');
+        const indexParams=new URLSearchParams({dataset:'TaiwanStockPrice',data_id:'TAIEX',start_date:iso(start),end_date:iso(end)});
+        const indexData=await fetchJson(api+'?'+indexParams.toString()).catch(()=>[]);
+        drawMarginHistoryChart(rows,indexData);
+        try {
+          const weekStart=new Date(); weekStart.setDate(weekStart.getDate()-29);
+          const isoLocal=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+          const futParams=new URLSearchParams({dataset:'TaiwanFuturesInstitutionalInvestors',data_id:'TX',start_date:isoLocal(weekStart),end_date:isoLocal(end)});
+          const futRows=await fetchJson(api+'?'+futParams.toString());
+          const byDay=new Map();
+          for(const item of futRows) {
+            const day=String(item.date||''), investor=String(item.institutional_investors||'');
+            if(!day||!['外資','投信','自營商'].includes(investor)) continue;
+            if(!byDay.has(day)) byDay.set(day,{外資:null,投信:null,自營商:null});
+            const long=Number(item.long_open_interest_balance_volume), short=Number(item.short_open_interest_balance_volume);
+            if(Number.isFinite(long)&&Number.isFinite(short)) byDay.get(day)[investor]=short-long;
+          }
+          const shortDays=[...byDay.entries()].sort((a,b)=>b[0].localeCompare(a[0]));
+          drawNetShortChart(shortDays,indexData);
+          const shortBody=document.querySelector('#net-short-rows');
+          if(!shortDays.length) throw new Error('近一個月沒有可用資料');
+          const fmtNet=value=>{if(!Number.isFinite(value)) return '—'; const span=document.createElement('span'); span.textContent=value.toLocaleString('zh-TW'); span.className=value>0?'market-positive':value<0?'market-negative':''; return span;};
+          shortBody.replaceChildren(...shortDays.map(([day,values])=>{
+            const tr=document.createElement('tr'), date=document.createElement('td'); date.textContent=day.slice(5).replace('-','/'); tr.append(date);
+            const vals=['外資','投信','自營商']; vals.forEach(key=>{const td=document.createElement('td');td.append(fmtNet(values[key]));tr.append(td);});
+            const total=vals.every(key=>Number.isFinite(values[key]))?vals.reduce((sum,key)=>sum+values[key],0):null;
+            const totalCell=document.createElement('td');totalCell.append(fmtNet(total));tr.append(totalCell);return tr;
+          }));
+          document.querySelector('#net-short-status').textContent='近一個月｜更新至 '+shortDays[0][0];
+        } catch(shortError) {
+          document.querySelector('#net-short-rows').innerHTML='<tr><td colspan="5">淨空單資料暫時無法載入。</td></tr>';
+          document.querySelector('#net-short-status').textContent=shortError.message||'資料載入失敗';
+        }
+        const cell=(value,kind,unitScale=1,decimals=0)=>{
+          const td=document.createElement('td');
+          if(value===null||!Number.isFinite(value)) { td.textContent='—'; return td; }
+          const shown=value/unitScale;
+          td.textContent=shown.toLocaleString('zh-TW',{minimumFractionDigits:decimals,maximumFractionDigits:decimals});
+          if(kind==='change') td.className=value>0?'market-positive':value<0?'market-negative':'';
+          return td;
+        };
+        body.replaceChildren(...rows.map(row=>{
+          const tr=document.createElement('tr');
+          const date=document.createElement('td'); date.textContent=row.date.slice(5).replace('-','/'); tr.append(date);
+          tr.append(cell(row.finance,'balance',100000000,2),cell(row.financeChange,'change',100000000,2),cell(row.short,'balance'),cell(row.shortChange,'change'));
+          return tr;
+        }));
+        status.textContent='資料截至 '+rows[0].date+'｜近 '+rows.length+' 個交易日';
+      } catch(error) {
+        body.innerHTML='<tr><td colspan="5">融資融券資料暫時無法載入，請稍後重試。</td></tr>';
+        document.querySelector('#margin-history-chart').innerHTML='<text x="450" y="150" text-anchor="middle" class="margin-chart-axis">融資融券資料暫時無法載入</text>';
+        status.textContent=error.message||'資料載入失敗';
+      }
+    }
     const form = document.querySelector("#lookup-form");
     const input = document.querySelector("#ticker");
     const status = document.querySelector("#status");
@@ -310,6 +599,73 @@
       const body = await response.json();
       if (body.status !== 200 || !Array.isArray(body.data)) throw new Error(body.msg || "資料服務目前無法提供資料");
       return body.data;
+    }
+
+    async function loadUsIndices() {
+      const toDate = date => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+      const end = new Date();
+      const start = new Date(end); start.setDate(start.getDate()-35);
+      const cards = [...document.querySelectorAll('[data-index-card]')];
+      await Promise.all(cards.map(async card => {
+        const symbol = card.dataset.indexCard;
+        const params = new URLSearchParams({dataset:'USStockPrice',data_id:symbol,start_date:toDate(start),end_date:toDate(end)});
+        try {
+          const records = await fetchJson(`${api}?${params.toString()}`);
+          const points = records.map(row=>({date:String(row.date||''),close:Number(row.Close??row.close)})).filter(row=>row.date&&Number.isFinite(row.close)).sort((a,b)=>a.date.localeCompare(b.date));
+          if(points.length<2) throw new Error('目前沒有足夠的指數資料');
+          const latest=points[points.length-1], previous=points[points.length-2];
+          const change=latest.close-previous.close, percent=previous.close?change/previous.close*100:0;
+          const trend=change>0?'trend-up':change<0?'trend-down':'trend-flat';
+          card.querySelector('.us-index-value').textContent=latest.close.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+          const changeEl=card.querySelector('.us-index-change');
+          const sign=change>0?'+':change<0?'−':'';
+          changeEl.textContent=(change>0?'▲':change<0?'▼':'—')+' '+sign+Math.abs(change).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' ('+sign+Math.abs(percent).toFixed(2)+'%)';
+          changeEl.classList.add(trend);
+          const spark=card.querySelector('.us-index-spark'), recent=points.slice(-20), vals=recent.map(point=>point.close), low=Math.min(...vals), high=Math.max(...vals), spread=high-low||1;
+          const coords=recent.map((point,index)=>`${(4+index*(172/(recent.length-1))).toFixed(1)},${(48-(point.close-low)/spread*40).toFixed(1)}`).join(' ');
+          const line=document.createElementNS('http://www.w3.org/2000/svg','polyline'); line.setAttribute('points',coords); line.setAttribute('class',trend); spark.replaceChildren(line);
+          card.querySelector('.us-index-date').textContent='資料日期 '+latest.date;
+        } catch(error) {
+          card.querySelector('.us-index-value').textContent='暫無資料';
+          card.querySelector('.us-index-change').textContent='此指數資料目前無法載入';
+          card.querySelector('.us-index-change').classList.add('trend-flat');
+          card.querySelector('.us-index-date').textContent='請稍後重新整理';
+        }
+      }));
+    }
+
+    async function loadNightFutures() {
+      const card=document.querySelector('[data-night-futures-card]');
+      const dateText=date=>`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+      const end=new Date(), start=new Date(end); start.setDate(start.getDate()-35);
+      const params=new URLSearchParams({dataset:'TaiwanFuturesDaily',data_id:'TX',start_date:dateText(start),end_date:dateText(end)});
+      try {
+        const records=await fetchJson(`${api}?${params.toString()}`);
+        const activeByDay=new Map();
+        records.filter(row=>String(row.trading_session||'').toLowerCase()==='after_market').forEach(row=>{
+          const point={date:String(row.date||''),close:Number(row.close??row.Close),volume:Number(row.volume)||0};
+          if(!point.date||!Number.isFinite(point.close)) return;
+          const current=activeByDay.get(point.date);
+          if(!current||point.volume>current.volume) activeByDay.set(point.date,point);
+        });
+        const points=[...activeByDay.values()].sort((a,b)=>a.date.localeCompare(b.date));
+        if(points.length<2) throw new Error('目前沒有足夠的台指期夜盤資料');
+        const latest=points[points.length-1],previous=points[points.length-2],change=latest.close-previous.close,percent=previous.close?change/previous.close*100:0;
+        const trend=change>0?'trend-up':change<0?'trend-down':'trend-flat';
+        card.querySelector('.us-index-value').textContent=latest.close.toLocaleString('zh-TW',{minimumFractionDigits:2,maximumFractionDigits:2});
+        const changeEl=card.querySelector('.us-index-change'),sign=change>0?'+':change<0?'−':'';
+        changeEl.textContent=(change>0?'▲':change<0?'▼':'—')+' '+sign+Math.abs(change).toLocaleString('zh-TW',{minimumFractionDigits:2,maximumFractionDigits:2})+' ('+sign+Math.abs(percent).toFixed(2)+'%)';
+        changeEl.classList.add(trend);
+        const spark=card.querySelector('.us-index-spark'),recent=points.slice(-20),values=recent.map(point=>point.close),low=Math.min(...values),high=Math.max(...values),spread=high-low||1;
+        const coords=recent.map((point,index)=>`${(4+index*(172/(recent.length-1))).toFixed(1)},${(48-(point.close-low)/spread*40).toFixed(1)}`).join(' ');
+        const line=document.createElementNS('http://www.w3.org/2000/svg','polyline'); line.setAttribute('points',coords); line.setAttribute('class',trend); spark.replaceChildren(line);
+        card.querySelector('.us-index-date').textContent='夜盤資料日期 '+latest.date;
+      } catch(error) {
+        card.querySelector('.us-index-value').textContent='暫無資料';
+        card.querySelector('.us-index-change').textContent='夜盤資料目前無法載入';
+        card.querySelector('.us-index-change').classList.add('trend-flat');
+        card.querySelector('.us-index-date').textContent='請稍後重新整理';
+      }
     }
 
     async function getCompanies() {
@@ -856,6 +1212,10 @@
     });
     input.value = "2330";
     lookup("2330");
+    loadMarginHistory();
+    loadUsIndices();
+    loadNightFutures();
   </script>
 </body>
 </html>
+
